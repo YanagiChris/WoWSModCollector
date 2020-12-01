@@ -45,7 +45,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 54);
+            this.label1.Location = new System.Drawing.Point(12, 59);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(32, 12);
             this.label1.TabIndex = 0;
@@ -71,7 +71,7 @@
             // 
             // ImportBtn
             // 
-            this.ImportBtn.Location = new System.Drawing.Point(50, 49);
+            this.ImportBtn.Location = new System.Drawing.Point(69, 54);
             this.ImportBtn.Name = "ImportBtn";
             this.ImportBtn.Size = new System.Drawing.Size(80, 23);
             this.ImportBtn.TabIndex = 3;
@@ -81,7 +81,7 @@
             // 
             // RemoveBtn
             // 
-            this.RemoveBtn.Location = new System.Drawing.Point(136, 49);
+            this.RemoveBtn.Location = new System.Drawing.Point(155, 54);
             this.RemoveBtn.Name = "RemoveBtn";
             this.RemoveBtn.Size = new System.Drawing.Size(80, 23);
             this.RemoveBtn.TabIndex = 4;
@@ -91,7 +91,7 @@
             // 
             // ThumbnailBtn
             // 
-            this.ThumbnailBtn.Location = new System.Drawing.Point(355, 49);
+            this.ThumbnailBtn.Location = new System.Drawing.Point(355, 54);
             this.ThumbnailBtn.Name = "ThumbnailBtn";
             this.ThumbnailBtn.Size = new System.Drawing.Size(80, 23);
             this.ThumbnailBtn.TabIndex = 5;
@@ -121,9 +121,9 @@
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(12, 9);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(106, 12);
+            this.label2.Size = new System.Drawing.Size(300, 12);
             this.label2.TabIndex = 8;
-            this.label2.Text = "WoWS Client Folder";
+            this.label2.Text = "WoWS client folder (C:\\Games\\World_of_Warships(_ASIA))";
             // 
             // FolderBtn
             // 
