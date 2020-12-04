@@ -1,300 +1,168 @@
-﻿using Microsoft.VisualBasic;
-using Microsoft.VisualBasic.FileIO;
+﻿//Copyright (c) 2020 Yanagi Chris twitter@YanagiChris
+//This software is released under the MIT License.
+//http://opensource.org/licenses/mit-license.php
+
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Configuration;
-using System.Data;
-using System.Drawing;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using WoWSModCollector.ModClass;
 
 namespace WoWSModCollector
 {
     public partial class Form1 : Form
     {
-        readonly string settingFilePath = Directory.GetCurrentDirectory() + Common.settingFileName;
-        readonly string myResModsPath = Directory.GetCurrentDirectory() + Common.resModsName;
-        readonly string myThumbPath = Directory.GetCurrentDirectory() + Common.ThumbName;
-        private readonly MyMods myMods;
+
+        private readonly MainProc mainProc;
 
         public Form1()
         {
             InitializeComponent();
 
-            ThumbnailPictureBox.SizeMode = PictureBoxSizeMode.Zoom;
+            mainProc = new MainProc();
 
+            FormInit();
 
-            if (Directory.Exists(myResModsPath) == false){
-                Directory.CreateDirectory(myResModsPath);
-            }
-
-            XmlManager xmlManager = new XmlManager(settingFilePath);
-
-            //設定ファイルの情報を呼び出す
-            myMods = xmlManager.XmlReader();
-            
-            //設定の反映
-            ClientPathTextBox.Text = myMods.ClientFolder;
-            
-            foreach(ModData modData in myMods.ModList)
-            {
-                ModsListBox.Items.Add(modData.Title);
-            }
+            this.FormClosing += Form1_FormClosing;
 
         }
 
+        private void FormInit()
+        {
+            VersionLabel.Text = Common.Version;
+
+            //設定の反映
+            ClientPathTextBox.Text = mainProc.GetClientPath();
+
+            string[] modNames = mainProc.GetAllMods();
+
+            if (WebAccess.IsLatestVersion())
+            {
+                LinkLabel.Visible = false;
+            }
+            else
+            {
+                LinkLabel.Text += Common.Version;
+            }
+
+            RefreshListBox();
+
+            
+        } 
+
         private void FolderBtn_Click(object sender, EventArgs e)
         {
-            FolderBrowserDialog fbd = new FolderBrowserDialog
+            string description = @"Select WoWS Client Folder. (C:\Games\World_of_Warships(_ASIA))";
+
+            string clientFolder = GetFolder(description);
+
+            if (clientFolder == "")
             {
-                Description = @"Select WoWS Client Folder. (C:\Games\World_of_Warships(_ASIA))",
-                RootFolder = Environment.SpecialFolder.Desktop,
-                SelectedPath = @"C:\Windows",
-                ShowNewFolderButton = true
-            };
-
-            //ダイアログを表示する
-            if (fbd.ShowDialog(this) == DialogResult.OK)
-            {
-                string cFolder = fbd.SelectedPath;
-                //選択されたフォルダを表示する
-                ClientPathTextBox.Text = cFolder;
-
-                //XMLファイルに保存
-                myMods.ClientFolder = cFolder;
-                XmlManager xmlManager = new XmlManager(settingFilePath);
-                xmlManager.XmlWriter(myMods);
-
+                return;
             }
+
+            ClientPathTextBox.Text = clientFolder;
+
+            //XMLファイルに保存
+            mainProc.WriteClientPathXml(clientFolder);
         }
 
         private void ApplyBtn_Click(object sender, EventArgs e)
         {
-            string binFolder = ClientPathTextBox.Text + Common.binName;
 
-            if (Directory.Exists(binFolder) == false)
+            ListView.CheckedIndexCollection checkedIdx = ModsListView.CheckedIndices;
+
+            mainProc.SaveCheckedMods(checkedIdx);
+
+            int[] deleteModIdxs = GetDeleteModIdxs();
+
+            foreach(int idx in deleteModIdxs)
             {
-                MessageBox.Show("Can't read WoWS Client Folder.");
-                return;
+                mainProc.RemoveClientMod(idx);
             }
 
-            if (Directory.Exists(myResModsPath) == false)
-            {
-                MessageBox.Show("Can't read res_mods Folder in application folder.");
-                return;
-            }
+            string[] applyModNames = GetApplyModNames();
 
-            var folderList = Directory.GetDirectories(binFolder);
-
-            if (folderList.Count() == 0)
-            {
-                MessageBox.Show("No folder in bin folder.");
-                return;
-            }
-
-            //降順に並び替え
-            Array.Sort(folderList);
-            Array.Reverse(folderList);
-
-            string targetFolder = folderList.First();
-            targetFolder += Common.resModsName;
-
-            Microsoft.VisualBasic.FileIO.FileSystem.CopyDirectory(myResModsPath, targetFolder, true);
-
-            MessageBox.Show("Success.");
+            mainProc.ModApply(ClientPathTextBox.Text, applyModNames);
+            
         }
 
         private void ImportBtn_Click(object sender, EventArgs e)
         {
-            FolderBrowserDialog fbd = new FolderBrowserDialog
-            {
-                Description = @"Select mod folder under 'res_mods'. (content/PnFMods/banks/...)",
-                RootFolder = Environment.SpecialFolder.Desktop,
-                SelectedPath = @"C:\Windows",
-                ShowNewFolderButton = true
-            };
 
-            //ダイアログを表示する
-            if (fbd.ShowDialog(this) != DialogResult.OK)
+            string description = @"Select a import mod folder. (content/gameplay/gui/PnFMods/banks/...)";
+
+            string importFolder = GetFolder(description);
+
+            if (mainProc.ImportMod(importFolder))
             {
-                return;
+                RefreshListBox();
+
             }
-
-            //選択されたフォルダ
-            string modFolder = fbd.SelectedPath;
-
-            string parentModFolder = Directory.GetParent(modFolder).Name;
-
-            string title = Interaction.InputBox("Input Mod title", "Mod title", parentModFolder);
-
-            if(title == "")
-            {
-                return;
-            }
-
-            string appModFolder = myResModsPath + "\\" + Path.GetFileName(modFolder);
-
-            Microsoft.VisualBasic.FileIO.FileSystem.CopyDirectory(modFolder, appModFolder, true);
-
-            List<string> files = Directory.GetFiles(modFolder, "*", System.IO.SearchOption.AllDirectories).ToList();
-
-            List<string> replacedFiles = new List<string>();
-
-            foreach (string file in files)
-            {
-                string replacedfile = file.Replace(modFolder, appModFolder);
-                replacedFiles.Add(replacedfile);
-            }
-
-            replacedFiles.Sort();
-
-            ModData modData = new ModData(title, replacedFiles);
-
-            myMods.ModList.Add(modData);
-
-            XmlManager xmlManager = new XmlManager(settingFilePath);
-            xmlManager.XmlWriter(myMods);
-
-            RefreshListBox();
-
-            MessageBox.Show("Imported.");
-
 
         }
 
         private void RefreshListBox()
         {
-            ModsListBox.Items.Clear();
-            myMods.ModList.Sort();
+            ModsListView.Items.Clear();
+            mainProc.myMods.ModList.Sort();
             RemovePictureBox();
 
-            foreach (ModData modData in myMods.ModList)
+            foreach (ModData modData in mainProc.myMods.ModList)
             {
-                ModsListBox.Items.Add(modData.Title);
+                ModsListView.Items.Add(modData.Title);
+                ModsListView.Items[ModsListView.Items.Count - 1].Checked = modData.ApplyChecked;
+                ;
+
             }
 
         }
 
         private void RemoveBtn_Click(object sender, EventArgs e)
         {
-            int removeIdx = ModsListBox.SelectedIndex;
-
-            if(removeIdx == -1)
+            if (ModsListView.SelectedItems.Count == 0)
             {
                 MessageBox.Show("Select target Mod.");
                 return;
             }
 
-            ModsListBox.Items.RemoveAt(removeIdx);
+            int removeIdx = ModsListView.SelectedItems[0].Index;
 
-            List<string> removeFiles = myMods.ModList.ElementAt(removeIdx).fileList;
+            bool result = mainProc.RemoveMod(removeIdx);
 
-            RemoveAppMod(removeFiles);
-            RemoveClientMod(removeFiles);
-
-            string thumbName = myMods.ModList.ElementAt(removeIdx).ThumbFileName;
-
-            if (File.Exists(thumbName))
-            {
-                File.Delete(myMods.ModList.ElementAt(removeIdx).ThumbFileName);
-            }
-
-            myMods.ModList.RemoveAt(removeIdx);
-
-            XmlManager xmlManager = new XmlManager(settingFilePath);
-            xmlManager.XmlWriter(myMods);
-
-            RefreshListBox();
-
-            MessageBox.Show("Removed.");
-
-        }
-
-        private void RemoveAppMod(List<string> appFiles)
-        {
-            foreach(string file in appFiles)
-            {
-                if (File.Exists(file)){
-                    File.Delete(file);
-                }
-            }
-
-        }
-
-        private void RemoveClientMod(List<string> appFiles)
-        {
-            string modPath = GetWoWSClientModPath();
-
-            if (modPath == "")
+            if (result == false)
             {
                 return;
             }
 
-            foreach (string file in appFiles)
-            {
-                string replacedFile = file.Replace(myResModsPath, modPath);
+            ModsListView.Items.RemoveAt(removeIdx);
 
-                if (File.Exists(replacedFile)){
-                    File.Delete(replacedFile);
-                }
-                
-            }
+            RefreshListBox();
 
         }
 
-        private string GetWoWSClientModPath()
+        private void ModsListView_Leave(object sender, System.EventArgs e)
         {
-            string binFolder = ClientPathTextBox.Text + "\\bin";
-            
-            if (Directory.Exists(binFolder) == false)
-            {
-                MessageBox.Show("Fail to read WoWS client folder");
-                return "";
-            }
+          
+            ListView.CheckedIndexCollection checkedIdx = ModsListView.CheckedIndices;
 
-            var folderList = Directory.GetDirectories(binFolder);
-
-            if (folderList.Count() == 0)
-            {
-                MessageBox.Show("No folder in 'bin' folder");
-                return "";
-            }
-
-            //降順に並び替え
-            Array.Sort(folderList);
-            Array.Reverse(folderList);
-
-            string targetFolder = folderList.First();
-            targetFolder += Common.resModsName;
-
-            return targetFolder;
+            mainProc.SaveCheckedMods(checkedIdx);
 
         }
 
-        private void ModsListBox_SelectedIndexChanged(object sender, EventArgs e)
+        private void ModsListView_SelectedIndexChanged(object sender, System.EventArgs e)
         {
 
             RemovePictureBox();
 
-            int selectedIdx = ModsListBox.SelectedIndex;
-
-            if(selectedIdx == -1)
+            if(ModsListView.SelectedItems.Count < 1)
             {
                 return;
             }
 
+            int sIdx = ModsListView.SelectedItems[0].Index;
+
             //設定ファイルの情報を呼び出す
-            XmlManager xmlManager = new XmlManager(settingFilePath);
-            MyMods myMods = xmlManager.XmlReader();
-
-            ModData modData = myMods.ModList.ElementAt(selectedIdx);
-
+            ModData modData = mainProc.myMods.ModList.ElementAt(sIdx);
             string fileName = modData.ThumbFileName;
 
             if (fileName == "")
@@ -303,7 +171,7 @@ namespace WoWSModCollector
             }
             else
             {
-                ThumbnailPictureBox.ImageLocation = modData.ThumbFileName;
+                ThumbnailPictureBox.ImageLocation = fileName;
             }
 
         }
@@ -311,38 +179,30 @@ namespace WoWSModCollector
         private void ThumbnailBtn_Click(object sender, EventArgs e)
         {
 
-            int sIdx = ModsListBox.SelectedIndex;
+            if(ModsListView.Items.Count < 1)
+            {
+                MessageBox.Show("No Mod.");
+                return;
 
-            if (sIdx == -1)
+            }
+
+            if (ModsListView.SelectedItems.Count < 1)
             {
                 MessageBox.Show("Select target Mod.");
                 return;
             }
 
-            OpenFileDialog fd = new OpenFileDialog() {
-                InitialDirectory = myResModsPath,
-                Title = "Select thumbnail",
-                Filter = "Image File(*.bmp,*.jpg,*.png,*.tif)|*.bmp;*.jpg;*.png;*.tif|Bitmap(*.bmp)|*.bmp|Jpeg(*.jpg)|*.jpg|PNG(*.png)|*.png"
-            };
+            int sIdx = ModsListView.SelectedItems[0].Index;
 
-            //ダイアログを表示する
-            if (fd.ShowDialog(this) != DialogResult.OK)
+
+            string myThumbImg = mainProc.GetThumbnailImgName(sIdx);
+
+            if(myThumbImg == "")
             {
                 return;
             }
 
-            //選択された画像
-            string imgName = fd.FileName;
-            string myThumbImg = myThumbPath + "\\" + sIdx + "_" + Path.GetFileName(imgName);
-
-            Microsoft.VisualBasic.FileIO.FileSystem.CopyFile(imgName, myThumbImg, true);
-
             ThumbnailPictureBox.ImageLocation = myThumbImg;
-
-            myMods.ModList.ElementAt(sIdx).ThumbFileName = myThumbImg;
-
-            XmlManager xmlManager = new XmlManager(settingFilePath);
-            xmlManager.XmlWriter(myMods);
 
         }
 
@@ -355,24 +215,90 @@ namespace WoWSModCollector
             }
         }
 
-        static void DeleteIfEmpty(String folder)
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-                 foreach (var subdir in Directory.GetDirectories(folder))
-                    DeleteIfEmpty(subdir);
+            ListView.CheckedIndexCollection checkedIdx = ModsListView.CheckedIndices;
 
-                 if (IsDirectoryEmpty(folder))
-                    Directory.Delete(folder);
-        }
+            mainProc.SaveCheckedMods(checkedIdx);
 
-        private static bool IsDirectoryEmpty(string path)
-        {
-                 return !Directory.EnumerateFileSystemEntries(path).Any();
+            Common.DeleteIfEmpty(mainProc.myModsPath);
         }
 
         private void Application_ApplicationExit(object sender, EventArgs e)
         {
-            DeleteIfEmpty(myResModsPath);
+
             Application.ApplicationExit -= new EventHandler(Application_ApplicationExit);
+        }
+
+        private int[] GetDeleteModIdxs()
+        {
+
+            List<int> tgtIdxs = new List<int>();
+
+            for (int i = 0; i < ModsListView.Items.Count; i++)
+            {
+                tgtIdxs.Add(i);
+            }
+
+            foreach (int checkedIdx in ModsListView.CheckedIndices)
+            {
+                if (tgtIdxs.Contains(checkedIdx))
+                {
+                    tgtIdxs.Remove(checkedIdx);
+                }
+            }
+
+            return tgtIdxs.ToArray();
+
+        }
+
+        private string[] GetApplyModNames()
+        {
+
+            int modCont = ModsListView.CheckedItems.Count;
+
+            if (modCont == 0)
+            {
+                return null;
+            }
+
+            string[] modsName = new string[modCont];
+            int cnt = 0;
+
+            foreach (ListViewItem itm in ModsListView.CheckedItems)
+            {
+                modsName[cnt] = itm.Text;
+                cnt++;
+
+            }
+
+            return modsName;
+
+        }
+
+        public string GetFolder(string description)
+        {
+
+            FolderBrowserDialog fbd = new FolderBrowserDialog
+            {
+                Description = description,
+                RootFolder = Environment.SpecialFolder.Desktop,
+                SelectedPath = @"C:\Windows",
+                ShowNewFolderButton = true
+            };
+
+            if (fbd.ShowDialog(this) == DialogResult.OK)
+            {
+                return fbd.SelectedPath;
+            }
+
+            return "";
+        }
+
+        private void LinkLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            LinkLabel.LinkVisited = true;
+            System.Diagnostics.Process.Start(Common.DLUrl);
         }
     }
 }

@@ -1,9 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿//Copyright (c) 2020 Yanagi Chris twitter@YanagiChris
+//This software is released under the MIT License.
+//http://opensource.org/licenses/mit-license.php
+
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Windows.Forms;
 using System.Xml.Serialization;
 using WoWSModCollector.ModClass;
 
@@ -12,38 +13,66 @@ namespace WoWSModCollector
     class XmlManager
     {
 
-        private string Xmlpath;
+        private string XmlPath;
 
         public XmlManager(string argXmlPath) 
         {
-            Xmlpath = argXmlPath;
-            //設定ファイル確認
-            if (File.Exists(Xmlpath) == false)
+            XmlPath = argXmlPath;
+
+            if (CheckSettingFile() == false)
             {
+                return;
+            }
+
+        }
+
+        public bool CheckSettingFile()
+        {
+            //設定ファイルが無かったら作る
+            if (File.Exists(XmlPath) == false)
+            {
+                File.Create(XmlPath).Close();
                 MyMods myMods = new MyMods();
                 XmlWriter(myMods);
-                
             }
+
+            try
+            {
+                using (Stream stream = new FileStream(XmlPath, FileMode.Open)) { }
+            }
+            catch
+            {
+                MessageBox.Show("Another process is using a setting file.");
+
+                return false;
+            }
+
+            return true;
         }
 
         public void XmlWriter(MyMods myMods)
         {
-            //設定ファイルが無かったら作る
-            if (File.Exists(Xmlpath) == false)
-            {
-                File.Create(Xmlpath).Close();
-            }
 
             //＜XMLファイルに書き込む＞
             //XmlSerializerオブジェクトを作成
             //書き込むオブジェクトの型を指定する
             XmlSerializer serializer = new XmlSerializer(typeof(MyMods));
             //ファイルを開く（UTF-8 BOM無し）
-            StreamWriter sw = new StreamWriter(Xmlpath, false, new UTF8Encoding(false));
-            //シリアル化し、XMLファイルに保存する
-            serializer.Serialize(sw, myMods);
-            //閉じる
-            sw.Close();
+
+            try
+            {
+                StreamWriter sw = new StreamWriter(XmlPath, false, new UTF8Encoding(false));
+                //シリアル化し、XMLファイルに保存する
+                serializer.Serialize(sw, myMods);
+                //閉じる
+                sw.Close();
+            }
+            catch
+            {
+                MessageBox.Show("Failed to write a setting file. Another process is using a setting file.");
+                return;
+            }
+            
         }
 
         public MyMods XmlReader()
@@ -53,7 +82,7 @@ namespace WoWSModCollector
             XmlSerializer serializer = new XmlSerializer(typeof(MyMods));
             //ファイルを開く
             StreamReader sr = new StreamReader(
-                Xmlpath, new System.Text.UTF8Encoding(false));
+                XmlPath, new System.Text.UTF8Encoding(false));
             //XMLファイルから読み込み、逆シリアル化する
             MyMods myMods = (MyMods)serializer.Deserialize(sr);
             //閉じる

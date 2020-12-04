@@ -30,7 +30,6 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.label1 = new System.Windows.Forms.Label();
-            this.ModsListBox = new System.Windows.Forms.ListBox();
             this.ThumbnailPictureBox = new System.Windows.Forms.PictureBox();
             this.ImportBtn = new System.Windows.Forms.Button();
             this.RemoveBtn = new System.Windows.Forms.Button();
@@ -39,6 +38,10 @@
             this.ClientPathTextBox = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.FolderBtn = new System.Windows.Forms.Button();
+            this.ModsListView = new System.Windows.Forms.ListView();
+            this.HeaderModName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.VersionLabel = new System.Windows.Forms.Label();
+            this.LinkLabel = new System.Windows.Forms.LinkLabel();
             ((System.ComponentModel.ISupportInitialize)(this.ThumbnailPictureBox)).BeginInit();
             this.SuspendLayout();
             // 
@@ -51,21 +54,13 @@
             this.label1.TabIndex = 0;
             this.label1.Text = "Mods";
             // 
-            // ModsListBox
-            // 
-            this.ModsListBox.FormattingEnabled = true;
-            this.ModsListBox.ItemHeight = 12;
-            this.ModsListBox.Location = new System.Drawing.Point(13, 83);
-            this.ModsListBox.Name = "ModsListBox";
-            this.ModsListBox.Size = new System.Drawing.Size(422, 448);
-            this.ModsListBox.TabIndex = 1;
-            this.ModsListBox.SelectedIndexChanged += new System.EventHandler(this.ModsListBox_SelectedIndexChanged);
-            // 
             // ThumbnailPictureBox
             // 
+            this.ThumbnailPictureBox.BackColor = System.Drawing.SystemColors.ControlLight;
             this.ThumbnailPictureBox.Location = new System.Drawing.Point(455, 54);
             this.ThumbnailPictureBox.Name = "ThumbnailPictureBox";
             this.ThumbnailPictureBox.Size = new System.Drawing.Size(498, 477);
+            this.ThumbnailPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.ThumbnailPictureBox.TabIndex = 2;
             this.ThumbnailPictureBox.TabStop = false;
             // 
@@ -104,7 +99,7 @@
             this.ApplyBtn.Location = new System.Drawing.Point(873, 537);
             this.ApplyBtn.Name = "ApplyBtn";
             this.ApplyBtn.Size = new System.Drawing.Size(80, 23);
-            this.ApplyBtn.TabIndex = 6;
+            this.ApplyBtn.TabIndex = 7;
             this.ApplyBtn.Text = "Apply";
             this.ApplyBtn.UseVisualStyleBackColor = true;
             this.ApplyBtn.Click += new System.EventHandler(this.ApplyBtn_Click);
@@ -113,8 +108,8 @@
             // 
             this.ClientPathTextBox.Location = new System.Drawing.Point(14, 24);
             this.ClientPathTextBox.Name = "ClientPathTextBox";
-            this.ClientPathTextBox.Size = new System.Drawing.Size(884, 19);
-            this.ClientPathTextBox.TabIndex = 7;
+            this.ClientPathTextBox.Size = new System.Drawing.Size(853, 19);
+            this.ClientPathTextBox.TabIndex = 1;
             // 
             // label2
             // 
@@ -122,24 +117,71 @@
             this.label2.Location = new System.Drawing.Point(12, 9);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(300, 12);
-            this.label2.TabIndex = 8;
+            this.label2.TabIndex = 0;
             this.label2.Text = "WoWS client folder (C:\\Games\\World_of_Warships(_ASIA))";
             // 
             // FolderBtn
             // 
-            this.FolderBtn.Location = new System.Drawing.Point(904, 22);
+            this.FolderBtn.Location = new System.Drawing.Point(873, 22);
             this.FolderBtn.Name = "FolderBtn";
-            this.FolderBtn.Size = new System.Drawing.Size(49, 23);
-            this.FolderBtn.TabIndex = 9;
+            this.FolderBtn.Size = new System.Drawing.Size(80, 23);
+            this.FolderBtn.TabIndex = 2;
             this.FolderBtn.Text = "Folder";
             this.FolderBtn.UseVisualStyleBackColor = true;
             this.FolderBtn.Click += new System.EventHandler(this.FolderBtn_Click);
+            // 
+            // ModsListView
+            // 
+            this.ModsListView.BackColor = System.Drawing.SystemColors.Control;
+            this.ModsListView.CheckBoxes = true;
+            this.ModsListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.HeaderModName});
+            this.ModsListView.FullRowSelect = true;
+            this.ModsListView.GridLines = true;
+            this.ModsListView.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.ModsListView.HideSelection = false;
+            this.ModsListView.Location = new System.Drawing.Point(12, 83);
+            this.ModsListView.MultiSelect = false;
+            this.ModsListView.Name = "ModsListView";
+            this.ModsListView.Size = new System.Drawing.Size(435, 448);
+            this.ModsListView.TabIndex = 6;
+            this.ModsListView.UseCompatibleStateImageBehavior = false;
+            this.ModsListView.View = System.Windows.Forms.View.Details;
+            this.ModsListView.SelectedIndexChanged += new System.EventHandler(this.ModsListView_SelectedIndexChanged);
+            this.ModsListView.Leave += new System.EventHandler(this.ModsListView_Leave);
+            // 
+            // HeaderModName
+            // 
+            this.HeaderModName.Text = "ModName";
+            this.HeaderModName.Width = 430;
+            // 
+            // VersionLabel
+            // 
+            this.VersionLabel.Location = new System.Drawing.Point(12, 542);
+            this.VersionLabel.Name = "VersionLabel";
+            this.VersionLabel.Size = new System.Drawing.Size(60, 12);
+            this.VersionLabel.TabIndex = 8;
+            // 
+            // LinkLabel
+            // 
+            this.LinkLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.LinkLabel.Location = new System.Drawing.Point(78, 539);
+            this.LinkLabel.Name = "LinkLabel";
+            this.LinkLabel.Size = new System.Drawing.Size(715, 18);
+            this.LinkLabel.TabIndex = 9;
+            this.LinkLabel.TabStop = true;
+            this.LinkLabel.Text = "Download the latest version ";
+            this.LinkLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.LinkLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkLabel_LinkClicked);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(965, 569);
+            this.Controls.Add(this.LinkLabel);
+            this.Controls.Add(this.VersionLabel);
+            this.Controls.Add(this.ModsListView);
             this.Controls.Add(this.FolderBtn);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.ClientPathTextBox);
@@ -148,7 +190,6 @@
             this.Controls.Add(this.RemoveBtn);
             this.Controls.Add(this.ImportBtn);
             this.Controls.Add(this.ThumbnailPictureBox);
-            this.Controls.Add(this.ModsListBox);
             this.Controls.Add(this.label1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
@@ -163,7 +204,6 @@
         #endregion
 
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.ListBox ModsListBox;
         private System.Windows.Forms.PictureBox ThumbnailPictureBox;
         private System.Windows.Forms.Button ImportBtn;
         private System.Windows.Forms.Button RemoveBtn;
@@ -172,6 +212,10 @@
         private System.Windows.Forms.TextBox ClientPathTextBox;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button FolderBtn;
+        private System.Windows.Forms.ListView ModsListView;
+        private System.Windows.Forms.ColumnHeader HeaderModName;
+        private System.Windows.Forms.Label VersionLabel;
+        private System.Windows.Forms.LinkLabel LinkLabel;
     }
 }
 

@@ -1,9 +1,9 @@
-﻿using System;
+﻿//Copyright (c) 2020 Yanagi Chris twitter@YanagiChris
+//This software is released under the MIT License.
+//http://opensource.org/licenses/mit-license.php
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace WoWSModCollector
 {
@@ -11,12 +11,14 @@ namespace WoWSModCollector
     {
         public string Title;
         public string ThumbFileName;
+        public bool ApplyChecked;
         public List<string> fileList;
 
         public ModData()
         {
             Title = "";
             ThumbFileName = "";
+            ApplyChecked = false;
             fileList = new List<string>();
         }
 

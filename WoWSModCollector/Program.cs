@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+﻿//Copyright (c) 2020 Yanagi Chris twitter@YanagiChris
+//This software is released under the MIT License.
+//http://opensource.org/licenses/mit-license.php
+
+using System;
 using System.Windows.Forms;
 
 namespace WoWSModCollector
