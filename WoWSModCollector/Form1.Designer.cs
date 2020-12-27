@@ -42,6 +42,7 @@
             this.HeaderModName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.VersionLabel = new System.Windows.Forms.Label();
             this.LinkLabel = new System.Windows.Forms.LinkLabel();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
             ((System.ComponentModel.ISupportInitialize)(this.ThumbnailPictureBox)).BeginInit();
             this.SuspendLayout();
             // 
@@ -167,18 +168,25 @@
             this.LinkLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.LinkLabel.Location = new System.Drawing.Point(78, 539);
             this.LinkLabel.Name = "LinkLabel";
-            this.LinkLabel.Size = new System.Drawing.Size(715, 18);
+            this.LinkLabel.Size = new System.Drawing.Size(683, 18);
             this.LinkLabel.TabIndex = 9;
             this.LinkLabel.TabStop = true;
             this.LinkLabel.Text = "Download the latest version ";
             this.LinkLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.LinkLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkLabel_LinkClicked);
             // 
+            // progressBar1
+            // 
+            this.progressBar1.Location = new System.Drawing.Point(767, 537);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(100, 23);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(965, 569);
+            this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.LinkLabel);
             this.Controls.Add(this.VersionLabel);
             this.Controls.Add(this.ModsListView);
@@ -216,6 +224,7 @@
         private System.Windows.Forms.ColumnHeader HeaderModName;
         private System.Windows.Forms.Label VersionLabel;
         private System.Windows.Forms.LinkLabel LinkLabel;
+        private System.Windows.Forms.ProgressBar progressBar1;
     }
 }
 

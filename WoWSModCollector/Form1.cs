@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -18,11 +19,13 @@ namespace WoWSModCollector
         {
             InitializeComponent();
 
-            mainProc = new MainProc();
+            mainProc = new MainProc(this);
 
             FormInit();
 
             this.FormClosing += Form1_FormClosing;
+
+            DisableProgressBar();
 
         }
 
@@ -39,15 +42,11 @@ namespace WoWSModCollector
             {
                 LinkLabel.Visible = false;
             }
-            else
-            {
-                LinkLabel.Text += Common.Version;
-            }
 
             RefreshListBox();
 
-            
-        } 
+
+        }
 
         private void FolderBtn_Click(object sender, EventArgs e)
         {
@@ -75,15 +74,22 @@ namespace WoWSModCollector
 
             int[] deleteModIdxs = GetDeleteModIdxs();
 
-            foreach(int idx in deleteModIdxs)
+            SetProgressStatus(deleteModIdxs.Length, true);
+
+            int i = 1;
+            foreach (int idx in deleteModIdxs)
             {
+                i++;
+                ChangeProgressStatus(i);
                 mainProc.RemoveClientMod(idx);
             }
+
+            DisableProgressBar();
 
             string[] applyModNames = GetApplyModNames();
 
             mainProc.ModApply(ClientPathTextBox.Text, applyModNames);
-            
+
         }
 
         private void ImportBtn_Click(object sender, EventArgs e)
@@ -111,7 +117,6 @@ namespace WoWSModCollector
             {
                 ModsListView.Items.Add(modData.Title);
                 ModsListView.Items[ModsListView.Items.Count - 1].Checked = modData.ApplyChecked;
-                ;
 
             }
 
@@ -142,7 +147,7 @@ namespace WoWSModCollector
 
         private void ModsListView_Leave(object sender, System.EventArgs e)
         {
-          
+
             ListView.CheckedIndexCollection checkedIdx = ModsListView.CheckedIndices;
 
             mainProc.SaveCheckedMods(checkedIdx);
@@ -154,7 +159,7 @@ namespace WoWSModCollector
 
             RemovePictureBox();
 
-            if(ModsListView.SelectedItems.Count < 1)
+            if (ModsListView.SelectedItems.Count < 1)
             {
                 return;
             }
@@ -179,7 +184,7 @@ namespace WoWSModCollector
         private void ThumbnailBtn_Click(object sender, EventArgs e)
         {
 
-            if(ModsListView.Items.Count < 1)
+            if (ModsListView.Items.Count < 1)
             {
                 MessageBox.Show("No Mod.");
                 return;
@@ -197,7 +202,7 @@ namespace WoWSModCollector
 
             string myThumbImg = mainProc.GetThumbnailImgName(sIdx);
 
-            if(myThumbImg == "")
+            if (myThumbImg == "")
             {
                 return;
             }
@@ -300,5 +305,30 @@ namespace WoWSModCollector
             LinkLabel.LinkVisited = true;
             System.Diagnostics.Process.Start(Common.DLUrl);
         }
+
+        public void SetProgressStatus(int maxValue, bool isDisplay)
+        {
+            //プログレスバーの設定
+            progressBar1.Minimum = 0;
+            progressBar1.Maximum = maxValue;
+            progressBar1.Value = 0;
+            progressBar1.Visible = isDisplay;
+
+        }
+
+        public void ChangeProgressStatus(int value)
+        {
+            progressBar1.Value = value;
+            
+        }
+
+        public void DisableProgressBar()
+        {
+            progressBar1.Minimum = 0;
+            progressBar1.Maximum = 0;
+            progressBar1.Value = 0;
+            progressBar1.Visible = false;
+        }
     }
+
 }

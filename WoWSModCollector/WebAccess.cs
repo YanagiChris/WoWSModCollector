@@ -12,9 +12,21 @@ namespace WoWSModCollector
 
             System.Net.WebClient wc = new System.Net.WebClient();
 
-            string result = wc.DownloadString(url);
+            string result = "";
 
-            wc.Dispose();
+            try
+            {
+                result = wc.DownloadString(url);
+
+            }
+            catch
+            {
+                return false;
+            }
+            finally
+            {
+                wc.Dispose();
+            }
 
             if (result != Common.Version)
             {

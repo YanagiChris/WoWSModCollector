@@ -17,7 +17,7 @@ namespace WoWSModCollector
         public static readonly string BinName = "\\bin";
         public static readonly string ThumbName = "\\Thumb";
         public static readonly string MyModsName = "\\MyMods";
-        public static readonly string Version = "v2.0.1";
+        public static readonly string Version = "v2.1.0.0";
         public static readonly string FileID = "1YQNZZKM84ljQlwRujnQduqfJDqxbDZXo";
         public static readonly string DLUrl = "https://yanagi-chris.booth.pm/items/2576787";
 

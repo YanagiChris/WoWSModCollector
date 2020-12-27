@@ -19,9 +19,11 @@ namespace WoWSModCollector
         public readonly string myThumbPath = Directory.GetCurrentDirectory() + Common.ThumbName;
         public ModClass.MyMods myMods;
         private XmlManager xmlManager;
+        public Form1 form;
 
-        public MainProc()
+        public MainProc(Form1 form1)
         {
+            form = form1;
             xmlManager = new XmlManager(settingFilePath);
 
             if (Directory.Exists(myModsPath) == false)
@@ -55,11 +57,6 @@ namespace WoWSModCollector
 
         public void ModApply(string wowsClientPath, string[] modNames)
         {
-            if (modNames == null || modNames.Length == 0)
-            {
-                MessageBox.Show("Please check mod list.");
-                return;
-            }
 
             string binFolder = wowsClientPath + Common.BinName;
 
@@ -89,18 +86,26 @@ namespace WoWSModCollector
             string targetFolder = folderList.First();
             targetFolder += Common.ResModsName;
 
-            if (CopyApplyMods(modNames, targetFolder))
+            if (CopyApplyMods(modNames, targetFolder, form))
             {
                 MessageBox.Show("Success.");
             }
 
             return;
         }
-        private bool CopyApplyMods(string[] modNames, string targetFolder)
+        private bool CopyApplyMods(string[] modNames, string targetFolder, Form1 form)
         {
+
+            form.SetProgressStatus(modNames.Length, true);
+
+            int i = 0;
 
             foreach (string modName in modNames)
             {
+
+                form.ChangeProgressStatus(i);
+                i++;
+
                 string copyModFolder = myModsPath + "\\" + modName;
 
                 string[] modFiles = Directory.GetFiles(copyModFolder);
@@ -110,6 +115,7 @@ namespace WoWSModCollector
 
                     if(Common.CopyFolder(copyModFolder, targetFolder) == false)
                     {
+                        form.DisableProgressBar();
                         return false;
                     }
 
@@ -117,6 +123,7 @@ namespace WoWSModCollector
                     {
                         if (Common.CopyFile(modFile, targetFolder + Path.GetFileName(modFile)) == false)
                         {
+                            form.DisableProgressBar();
                             return false;
                         }
                     }
@@ -124,11 +131,12 @@ namespace WoWSModCollector
                 catch
                 {
                     MessageBox.Show("File copy error.");
-
+                    form.DisableProgressBar();
                     return false;
                 }
             }
 
+            form.DisableProgressBar();
             return true;
 
         }
